@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LinkedIn声掛けツール</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#f3f6f5; --panel:#ffffff; --ink:#15211f; --muted:#5b6b68; --line:#d6e0dd;
+  --accent:#0d6b5f; --accent-ink:#ffffff; --accent-soft:#e0f0ec;
+  --warn:#9a5b00; --warn-soft:#fbefd9; --done:#2f6d2a; --done-soft:#e3f1df; --stop:#6b6f72; --stop-soft:#eceeef; --bad:#a3271f;
+  --f-display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1716; --panel:#172220; --ink:#e4eeeb; --muted:#9aaba7; --line:#2b3b38;
+  --accent:#4fc2ad; --accent-ink:#06201b; --accent-soft:#1c3631;
+  --warn:#f0b75a; --warn-soft:#3a2c14; --done:#8fd486; --done-soft:#1d3220; --stop:#a7adb0; --stop-soft:#262d2f; --bad:#ff8a80; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;padding:16px;padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:1.4rem} h2{font-size:1.1rem} h3{font-size:.95rem}
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.top p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.meter{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.meter b{font-family:var(--f-mono);font-size:1.05rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{width:110px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.over i{background:var(--warn)}
+button{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+button:disabled{opacity:.55;cursor:default}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.list{display:grid;gap:6px}
+.list-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.item{display:grid;gap:2px;text-align:left;width:100%;padding:10px 12px;border-radius:8px;border:1px solid transparent;background:transparent}
+.item:hover{background:var(--accent-soft)}
+.item.on{border-color:var(--accent);background:var(--accent-soft)}
+.item .nm{font-weight:700}
+.item .sub{color:var(--muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{display:inline-block;font-size:.72rem;letter-spacing:.04em;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:700;justify-self:start;white-space:nowrap}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.done{background:var(--done-soft);color:var(--done)}
+.chip.stop{background:var(--stop-soft);color:var(--stop)}
+.work{display:grid;gap:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+label{display:grid;gap:4px;font-size:.8rem;color:var(--muted);font-weight:500}
+input,textarea,select{font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:70px;line-height:1.6}
+.paste textarea{min-height:110px;background:var(--panel);border:2px solid var(--accent)}
+.steps{display:flex;flex-wrap:wrap;gap:4px}
+.steps button{font-size:.75rem;padding:2px 9px;border-radius:999px}
+.steps button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.actions select,.actions input{width:auto}
+.status{font-size:.85rem;color:var(--muted)}
+.status.err{color:var(--bad)}
+.read{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:.88rem}
+.opts{display:grid;gap:10px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;min-width:0}
+.opt .lbl{font-family:var(--f-display);font-weight:700;font-size:.9rem;color:var(--accent)}
+.meta{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.log{display:grid;gap:8px;max-height:340px;overflow:auto;padding-right:4px}
+.msg{padding:8px 12px;border-radius:10px;max-width:88%;white-space:pre-wrap;word-break:break-word;font-size:.88rem}
+.msg.them{background:var(--bg);border:1px solid var(--line);justify-self:start}
+.msg.me{background:var(--accent-soft);justify-self:end}
+.msg small{display:block;font-family:var(--f-mono);font-size:.68rem;color:var(--muted)}
+.empty,.note{color:var(--muted);font-size:.85rem;margin:0}
+.login{max-width:380px;margin:10vh auto 0}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.75rem;color:var(--muted);font-weight:500;letter-spacing:.04em}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+th.n{text-align:right}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--accent-soft)}
+.funnel{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.funnel div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.funnel b{display:block;font-family:var(--f-mono);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.funnel span{font-size:.78rem;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const STAGES = [
+  {k:"before",t:"申請前",c:""},{k:"sent",t:"申請済み",c:""},{k:"connected",t:"つながった",c:""},
+  {k:"talking",t:"会話中",c:"warn"},{k:"oneonone",t:"1to1調整",c:"warn"},{k:"invited",t:"ゲスト招待済み",c:"warn"},
+  {k:"registered",t:"申込済み",c:"done"},{k:"pass",t:"見送り",c:"stop"},
+];
+const stageOf = k => STAGES.find(s=>s.k===k) || STAGES[0];
+const sb = supabase.createClient(window.LK_CONFIG.supabaseUrl, window.LK_CONFIG.supabaseAnonKey);
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = d => new Date(d).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+const toEmail = id => id.includes("@") ? id.trim().toLowerCase() : `${id.trim().toLowerCase()}@koekake.invalid`;
+function toast(t){ const el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>el.hidden=true,2000); }
+async function copy(t){ try{ await navigator.clipboard.writeText(t); toast("コピーしました"); }catch(e){ toast("コピーできませんでした。文面を選択してコピーしてください"); } }
+async function callFn(name, body){
+  const { data, error } = await sb.functions.invoke(name, { body });
+  if (error) {
+    let msg = "うまくいきませんでした。もう一度試してください";
+    try { const j = await error.context.json(); if (j.error) msg = j.error; } catch(e){}
+    throw new Error(msg);
+  }
+  return data;
+}
+
+let ME=null, CH=null, view="mine", contacts=[], sel=null, msgs=[], lastGen=null;
+
+/* ---------- login ---------- */
+function renderLogin(err){
+  $("app").innerHTML = `<section class="panel login work">
+    <h1>LinkedIn声掛けツール</h1>
+    <p class="note">チャプターの運営から受け取ったログインIDとパスワードで入ってください。</p>
+    <form id="lf" class="work" style="gap:10px">
+      <label>ログインID<input id="lid" autocomplete="username" required></label>
+      <label>パスワード<input id="lpw" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">ログイン</button>
+      <span class="status err" id="lerr">${esc(err||"")}</span>
+    </form></section>`;
+  $("lf").onsubmit = async e => {
+    e.preventDefault();
+    const { error } = await sb.auth.signInWithPassword({ email: toEmail($("lid").value), password: $("lpw").value });
+    if (error) $("lerr").textContent = "ログインIDかパスワードが違います";
+  };
+}
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) return renderLogin();
+  const { data: me } = await sb.from("lk_members").select("*").eq("user_id", session.user.id).maybeSingle();
+  if (!me || !me.active){ await sb.auth.signOut(); return renderLogin("このアカウントは使えません。チャプターの運営に確認してください"); }
+  ME = me;
+  const { data: ch } = await sb.from("lk_chapters").select("*").eq("id", me.chapter_id).single();
+  CH = ch;
+  await loadContacts();
+  render();
+}
+sb.auth.onAuthStateChange((ev)=>{ if ((ev==="SIGNED_IN" && !ME) || ev==="SIGNED_OUT"){ if(ev==="SIGNED_OUT") ME=null; setTimeout(boot,0); } });
+boot();
+
+async function loadContacts(){
+  const { data } = await sb.from("lk_contacts").select("*").eq("owner_id", ME.user_id).order("updated_at",{ascending:false});
+  contacts = data || [];
+  if (!sel || !contacts.find(c=>c.id===sel)) sel = contacts[0]?.id || null;
+  await loadMsgs();
+}
+async function loadMsgs(){
+  if (!sel){ msgs=[]; return; }
+  const { data } = await sb.from("lk_messages").select("*").eq("contact_id", sel).order("created_at");
+  msgs = data || [];
+}
+async function sentToday(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  const { count } = await sb.from("lk_messages").select("id",{count:"exact",head:true}).eq("owner_id",ME.user_id).eq("who","me").gte("created_at", d.toISOString());
+  return count||0;
+}
+
+/* ---------- shell ---------- */
+function render(){
+  $("app").innerHTML = `
+  <header class="top">
+    <div><h1>LinkedIn声掛けツール</h1><p>${esc(CH.name)} · ${esc(ME.display_name)}さん</p></div>
+    <div class="tabs">
+      <button data-v="mine" class="${view==="mine"?"on":""}">自分の声掛け</button>
+      ${ME.role==="admin"?`<button data-v="admin" class="${view==="admin"?"on":""}">管理</button>`:""}
+      <button data-v="me" class="${view==="me"?"on":""}">自分の情報</button>
+      <button class="ghost" id="out">ログアウト</button>
+    </div>
+  </header>
+  <div id="main"></div>`;
+  document.querySelectorAll(".tabs [data-v]").forEach(b=>b.onclick=()=>{ view=b.dataset.v; render(); });
+  $("out").onclick = ()=>sb.auth.signOut();
+  if (view==="mine") renderMine(); else if (view==="admin") renderAdmin(); else renderMe();
+}
+
+/* ---------- my settings ---------- */
+function renderMe(){
+  $("main").innerHTML = `<section class="panel work">
+    <h2>自分の情報</h2>
+    <p class="note">返信案の「自分の仕事の話」に使われます。</p>
+    <div class="row">
+      <label>名前<input id="m_name" value="${esc(ME.display_name)}"></label>
+      <label>仕事（一言で）<input id="m_biz" value="${esc(ME.biz)}" placeholder="例：AIで業務の仕組みを作る会社"></label>
+    </div>
+    <div class="actions"><button class="primary" id="m_save">保存</button></div>
+  </section>`;
+  $("m_save").onclick = async ()=>{
+    const patch={display_name:$("m_name").value.trim()||ME.display_name, biz:$("m_biz").value};
+    const { error } = await sb.from("lk_members").update(patch).eq("user_id",ME.user_id);
+    if (error) return toast("保存できませんでした");
+    Object.assign(ME,patch); toast("保存しました");
+  };
+}
+
+/* ---------- member workspace ---------- */
+async function renderMine(){
+  $("main").innerHTML = `
+  <div class="work">
+    <div class="meter" title="スパムに見えないよう、1日${CH.daily_cap}通までを目安にしています">
+      今日送った数 <b id="todayN">…</b>/${CH.daily_cap}<span class="bar" id="bar"><i id="barI" style="width:0"></i></span>
+    </div>
+    <div class="grid">
+      <aside class="panel">
+        <div class="list-head"><h2>声掛けリスト</h2><button class="primary" id="addBtn">＋ 追加</button></div>
+        <label style="margin-bottom:10px">段階で絞る<select id="filter"><option value="">すべて</option>${STAGES.map(s=>`<option value="${s.k}">${s.t}</option>`).join("")}</select></label>
+        <div class="list" id="list"></div>
+      </aside>
+      <main class="work" id="work"></main>
+    </div>
+  </div>`;
+  $("filter").onchange = renderList;
+  $("addBtn").onclick = async ()=>{
+    const { data, error } = await sb.from("lk_contacts").insert({owner_id:ME.user_id, chapter_id:ME.chapter_id, name:""}).select().single();
+    if (error) return toast("追加できませんでした");
+    contacts.unshift(data); sel=data.id; msgs=[]; lastGen=null; renderList(); renderWork();
+    setTimeout(()=>$("p_name")?.focus(),0);
+  };
+  renderList(); renderWork(); renderMeter();
+}
+async function renderMeter(){
+  const n = await sentToday(); if(!$("todayN")) return;
+  $("todayN").textContent=n; $("barI").style.width=Math.min(100,n/CH.daily_cap*100)+"%"; $("bar").classList.toggle("over",n>=CH.daily_cap);
+}
+function renderList(){
+  const f=$("filter").value, ps=contacts.filter(p=>!f||p.stage===f);
+  $("list").innerHTML = ps.length ? ps.map(p=>{ const st=stageOf(p.stage);
+    return `<button class="item ${p.id===sel?"on":""}" data-id="${p.id}"><span class="nm">${esc(p.name||"（名前未入力）")}</span><span class="sub">${esc(p.headline||"肩書き未入力")}</span><span class="chip ${st.c}">${st.t}</span></button>`;
+  }).join("") : `<p class="empty">${contacts.length?"この段階の人はいません。":"「＋ 追加」で、声を掛けたい相手を入れましょう。"}</p>`;
+  $("list").querySelectorAll(".item").forEach(b=>b.onclick=async()=>{ sel=b.dataset.id; lastGen=null; await loadMsgs(); renderList(); renderWork(); });
+}
+let saveT=null;
+function queueSave(p){ clearTimeout(saveT); saveT=setTimeout(async()=>{
+  await sb.from("lk_contacts").update({name:p.name,headline:p.headline,profile:p.profile,posts:p.posts}).eq("id",p.id);
+},600); }
+function renderWork(){
+  const p=contacts.find(x=>x.id===sel), w=$("work");
+  if(!p){ w.innerHTML=`<section class="panel"><p class="empty">左の「＋ 追加」で、LinkedInで声を掛けたい相手を入れてください。名前と肩書き、プロフィールの一部を貼るだけで始められます。</p></section>`; return; }
+  const first=!msgs.length;
+  w.innerHTML = `
+  <section class="panel work">
+    <div class="list-head" style="margin:0"><h2>${esc(p.name||"新しい相手")}</h2><button class="ghost" id="delBtn">この人を消す</button></div>
+    <div class="steps" id="steps">${STAGES.map(s=>`<button data-k="${s.k}" class="${s.k===p.stage?"on":""}">${s.t}</button>`).join("")}</div>
+    <div class="row">
+      <label>名前<input id="p_name" value="${esc(p.name)}"></label>
+      <label>肩書き・会社<input id="p_headline" value="${esc(p.headline)}"></label>
+    </div>
+    <label>プロフィールのメモ（LinkedInの自己紹介をそのまま貼ってもOK）<textarea id="p_profile">${esc(p.profile)}</textarea></label>
+    <label>最近の投稿（任意）<textarea id="p_posts" style="min-height:50px">${esc(p.posts)}</textarea></label>
+  </section>
+  <section class="panel work">
+    <h2>やり取り</h2>
+    <div class="log" id="log">${msgs.length?msgs.map(m=>`<div class="msg ${m.who}"><small>${m.who==="me"?"自分":"相手"} · ${fmt(m.created_at)}</small>${esc(m.body)}</div>`).join(""):`<p class="empty">まだやり取りはありません。最初は「つながり申請の一言」を作れます。</p>`}</div>
+    <div class="paste"><label>相手から届いたメッセージを貼り付け${first?"（なければ空のままで、申請の一言を作ります）":""}<textarea id="their" placeholder="LinkedInのメッセージ欄からコピーして、ここに貼り付け"></textarea></label></div>
+    <div class="actions">
+      <button class="primary" id="genBtn">${first?"申請の一言を作る":"返信案を作る"}</button>
+      <button class="ghost" id="manualBtn">自分で書いた文を記録</button>
+      <span class="status" id="genStatus"></span>
+    </div>
+    <div id="manualBox" hidden class="work" style="gap:8px">
+      <label>LinkedInで送った文<textarea id="manualTxt"></textarea></label>
+      <div class="actions"><button class="primary" id="manualGo">記録する</button></div>
+    </div>
+    <div id="result"></div>
+    <p class="note">ここに記録したやり取りと段階は、チャプターの運営（管理者）も見られます。送信は必ずLinkedInで自分で行ってください。</p>
+  </section>`;
+  const bind=(id,k)=>$(id).addEventListener("input",e=>{ p[k]=e.target.value; queueSave(p); if(k==="name"||k==="headline") renderList(); });
+  bind("p_name","name"); bind("p_headline","headline"); bind("p_profile","profile"); bind("p_posts","posts");
+  $("steps").querySelectorAll("button").forEach(b=>b.onclick=async()=>{ p.stage=b.dataset.k; await sb.from("lk_contacts").update({stage:p.stage}).eq("id",p.id); renderList(); renderWork(); });
+  let armed=false;
+  $("delBtn").onclick=async()=>{ if(!armed){armed=true;$("delBtn").textContent="もう一度押すと消えます";return;}
+    await sb.from("lk_contacts").delete().eq("id",p.id); contacts=contacts.filter(x=>x.id!==p.id); sel=contacts[0]?.id||null; await loadMsgs(); renderList(); renderWork(); };
+  $("genBtn").onclick=()=>generate(p);
+  $("manualBtn").onclick=()=>{ $("manualBox").hidden=!$("manualBox").hidden; };
+  $("manualGo").onclick=()=>{ const t=$("manualTxt").value.trim(); if(t) recordSent(p,$("their").value.trim(),t,null); };
+  const lg=$("log"); lg.scrollTop=lg.scrollHeight;
+  if(lastGen && lastGen.pid===p.id) showResult(p,lastGen.data,lastGen.their);
+}
+async function generate(p){
+  clearTimeout(saveT);
+  await sb.from("lk_contacts").update({name:p.name,headline:p.headline,profile:p.profile,posts:p.posts}).eq("id",p.id);
+  const their=$("their").value.trim();
+  $("genBtn").disabled=true; $("genStatus").className="status"; $("genStatus").textContent="考えています…（10〜30秒ほど）"; $("result").innerHTML="";
+  try{
+    const data = await callFn("lk-generate",{contact_id:p.id, their_message:their});
+    lastGen={pid:p.id,data,their}; $("genStatus").textContent=""; showResult(p,data,their);
+  }catch(e){ $("genStatus").className="status err"; $("genStatus").textContent=e.message; }
+  finally{ $("genBtn").disabled=false; }
+}
+function showResult(p,data,their){
+  const next=STAGES.find(s=>s.k===data.next_stage);
+  $("result").innerHTML = `<div class="work" style="gap:10px;margin-top:6px">
+    ${data.read?`<div class="read"><b>相手の温度感：</b>${esc(data.read)}${next?`<br><b>次に目指す段階：</b>${next.t}`:""}</div>`:""}
+    <div class="opts">${(data.options||[]).map((o,i)=>`<div class="opt">
+      <div class="lbl">${esc(o.label||("案"+(i+1)))}</div>
+      <textarea id="opt${i}" rows="4">${esc(o.text)}</textarea>
+      <div class="actions"><button class="cp" data-i="${i}">コピー</button><button class="sent primary" data-i="${i}">LinkedInで送った</button><span class="meta" id="len${i}">${(o.text||"").length}字</span></div>
+    </div>`).join("")}</div>
+    ${data.tip?`<p class="note">送る前に：${esc(data.tip)}</p>`:""}</div>`;
+  (data.options||[]).forEach((o,i)=>$("opt"+i).addEventListener("input",e=>$("len"+i).textContent=e.target.value.length+"字"));
+  $("result").querySelectorAll(".cp").forEach(b=>b.onclick=()=>copy($("opt"+b.dataset.i).value));
+  $("result").querySelectorAll(".sent").forEach(b=>b.onclick=()=>recordSent(p,their,$("opt"+b.dataset.i).value,next));
+}
+async function recordSent(p,their,text,next){
+  const rows=[]; if(their) rows.push({contact_id:p.id,owner_id:ME.user_id,who:"them",body:their});
+  rows.push({contact_id:p.id,owner_id:ME.user_id,who:"me",body:text});
+  for (const r of rows){ const { error } = await sb.from("lk_messages").insert(r); if(error) return toast("記録できませんでした"); }
+  const idx=s=>STAGES.findIndex(x=>x.k===s);
+  let stage=p.stage;
+  if(next && idx(next.k)>idx(p.stage)) stage=next.k; else if(p.stage==="before") stage="sent";
+  if(stage!==p.stage){ p.stage=stage; await sb.from("lk_contacts").update({stage}).eq("id",p.id); }
+  else await sb.from("lk_contacts").update({name:p.name}).eq("id",p.id);
+  lastGen=null; await loadMsgs(); contacts.sort((a,b)=>a.id===p.id?-1:b.id===p.id?1:0);
+  renderList(); renderWork(); renderMeter(); toast("記録しました");
+}
+
+/* ---------- admin ---------- */
+let adminSel=null;
+async function renderAdmin(){
+  $("main").innerHTML = `<div class="work" id="adm"><p class="empty">読み込んでいます…</p></div>`;
+  const [{data:sum},{data:all},{data:gens}] = await Promise.all([
+    sb.from("lk_member_summary").select("*").order("display_name"),
+    sb.from("lk_contacts").select("id,owner_id,name,headline,stage,updated_at").eq("chapter_id",ME.chapter_id).order("updated_at",{ascending:false}).limit(500),
+    sb.from("lk_generations").select("cost_jpy,created_at").eq("chapter_id",ME.chapter_id).gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+  ]);
+  const names = Object.fromEntries((sum||[]).map(m=>[m.user_id,m.display_name]));
+  const cnt = k => (all||[]).filter(c=>c.stage===k).length;
+  const spent = (gens||[]).reduce((s,g)=>s+Number(g.cost_jpy),0);
+  $("adm").innerHTML = `
+  <section class="panel work">
+    <div class="list-head" style="margin:0"><h2>チャプター全体</h2><span class="meta">今月のAI費用 ${Math.round(spent).toLocaleString()}円 / 予算 ${CH.monthly_budget_jpy.toLocaleString()}円 · ${(gens||[]).length}回</span></div>
+    <div class="funnel">
+      ${["sent","connected","talking","oneonone","invited","registered"].map(k=>`<div><b>${cnt(k)}</b><span>${stageOf(k).t}</span></div>`).join("")}
+    </div>
+    <p class="note">数字は、いまその段階にいる相手の人数です。</p>
+  </section>
+  <section class="panel work">
+    <h2>メンバー別</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>メンバー</th><th class="n">声掛け</th><th class="n">会話中以上</th><th class="n">1to1調整</th><th class="n">招待</th><th class="n">申込</th><th class="n">今日送信</th><th class="n">今月AI</th><th class="n">費用(円)</th><th>最終活動</th></tr></thead>
+      <tbody>${(sum||[]).map(m=>`<tr class="click" data-u="${m.user_id}"><td>${esc(m.display_name)}${m.active?"":' <span class="chip stop">停止中</span>'}</td><td class="n">${m.contacted}</td><td class="n">${m.in_conversation}</td><td class="n">${m.oneonone}</td><td class="n">${m.invited}</td><td class="n">${m.registered}</td><td class="n">${m.sent_today}</td><td class="n">${m.generations_month}</td><td class="n">${Math.round(m.cost_month_jpy)}</td><td>${m.last_activity?fmt(m.last_activity):"—"}</td></tr>`).join("")}</tbody>
+    </table></div>
+  </section>
+  <section class="panel work">
+    <div class="list-head" style="margin:0"><h2>声掛けの一覧</h2>
+      <div class="actions"><select id="fm"><option value="">全員</option>${(sum||[]).map(m=>`<option value="${m.user_id}">${esc(m.display_name)}</option>`).join("")}</select>
+      <select id="fs"><option value="">全段階</option>${STAGES.map(s=>`<option value="${s.k}">${s.t}</option>`).join("")}</select></div></div>
+    <div class="tbl"><table><thead><tr><th>メンバー</th><th>相手</th><th>肩書き</th><th>段階</th><th>更新</th></tr></thead><tbody id="ctb"></tbody></table></div>
+    <div id="cdetail"></div>
+  </section>
+  <section class="panel work">
+    <h2>チャプターの設定</h2>
+    <div class="row">
+      <label>定例会の日時・場所<input id="c_meeting" value="${esc(CH.meeting)}" placeholder="例：毎週火曜 7:00〜 関内（オンライン可）"></label>
+      <label>ビジター申込フォームURL<input id="c_form" value="${esc(CH.form_url)}" placeholder="https://forms.gle/..."></label>
+    </div>
+    <div class="row">
+      <label>月のAI予算（円）<input id="c_budget" type="number" min="0" value="${CH.monthly_budget_jpy}"></label>
+      <label>1人1日の送信目安（通）<input id="c_cap" type="number" min="1" value="${CH.daily_cap}"></label>
+    </div>
+    <label>誘い方の方針<textarea id="c_style" placeholder="例：最初はオンライン30分の1to1を提案し、定例会は2回目以降に誘う">${esc(CH.style)}</textarea></label>
+    <label>うまくいったやり取りの例（全員の返信案の参考になります）<textarea id="c_examples" style="min-height:140px" placeholder="相手：〜&#10;自分：〜">${esc(CH.examples)}</textarea></label>
+    <div class="actions"><button class="primary" id="c_save">保存</button></div>
+  </section>
+  <section class="panel work">
+    <h2>メンバーのログイン</h2>
+    <div class="row">
+      <label>ログインID<input id="n_id" placeholder="例：yamazaki"></label>
+      <label>初期パスワード（8文字以上）<input id="n_pw"></label>
+      <label>名前<input id="n_name" placeholder="例：山崎香"></label>
+      <label>仕事（任意）<input id="n_biz"></label>
+      <label>役割<select id="n_role"><option value="member">メンバー</option><option value="admin">管理者</option></select></label>
+    </div>
+    <div class="actions"><button class="primary" id="n_go">ログインを作る</button><span class="status" id="n_st"></span></div>
+    <div class="tbl"><table><thead><tr><th>メンバー</th><th>役割</th><th>状態</th><th></th></tr></thead>
+    <tbody>${(sum||[]).map(m=>`<tr><td>${esc(m.display_name)}</td><td>${m.role==="admin"?"管理者":"メンバー"}</td><td>${m.active?"利用中":"停止中"}</td>
+      <td>${m.user_id===ME.user_id?"":`<button class="ghost" data-act="${m.active?"stop":"start"}" data-u="${m.user_id}">${m.active?"止める":"再開する"}</button><button class="ghost" data-act="pw" data-u="${m.user_id}">パスワード変更</button>`}</td></tr>`).join("")}</tbody></table></div>
+  </section>`;
+
+  const drawContacts=()=>{
+    const fm=$("fm").value, fs=$("fs").value;
+    const rows=(all||[]).filter(c=>(!fm||c.owner_id===fm)&&(!fs||c.stage===fs));
+    $("ctb").innerHTML = rows.length? rows.map(c=>{const st=stageOf(c.stage); return `<tr class="click" data-c="${c.id}"><td>${esc(names[c.owner_id]||"")}</td><td>${esc(c.name||"（未入力）")}</td><td>${esc(c.headline)}</td><td><span class="chip ${st.c}">${st.t}</span></td><td>${fmt(c.updated_at)}</td></tr>`;}).join("")
+      : `<tr><td colspan="5" class="empty">該当する声掛けはありません。</td></tr>`;
+    $("ctb").querySelectorAll("tr[data-c]").forEach(tr=>tr.onclick=()=>showContact(tr.dataset.c, all, names));
+  };
+  $("fm").onchange=drawContacts; $("fs").onchange=drawContacts; drawContacts();
+  document.querySelectorAll("#adm tr[data-u]").forEach(tr=>tr.onclick=()=>{ $("fm").value=tr.dataset.u; drawContacts(); $("fm").scrollIntoView({behavior:"smooth",block:"center"}); });
+
+  $("c_save").onclick=async()=>{
+    const patch={meeting:$("c_meeting").value, form_url:$("c_form").value, style:$("c_style").value, examples:$("c_examples").value,
+      monthly_budget_jpy:Math.max(0,parseInt($("c_budget").value)||0), daily_cap:Math.max(1,parseInt($("c_cap").value)||20)};
+    const { error } = await sb.from("lk_chapters").update(patch).eq("id",CH.id);
+    if(error) return toast("保存できませんでした"); Object.assign(CH,patch); toast("保存しました");
+  };
+  $("n_go").onclick=async()=>{
+    $("n_st").className="status"; $("n_st").textContent="作っています…";
+    try{ await callFn("lk-admin-users",{action:"create",login_id:$("n_id").value,password:$("n_pw").value,display_name:$("n_name").value,biz:$("n_biz").value,role:$("n_role").value});
+      toast("ログインを作りました"); renderAdmin(); }
+    catch(e){ $("n_st").className="status err"; $("n_st").textContent=e.message; }
+  };
+  document.querySelectorAll("#adm button[data-act]").forEach(b=>b.onclick=async(ev)=>{
+    ev.stopPropagation();
+    try{
+      if(b.dataset.act==="pw"){
+        const box=document.createElement("span"); box.className="actions";
+        box.innerHTML=`<input placeholder="新しいパスワード（8文字以上）" style="width:220px"><button class="primary">変更</button>`;
+        b.replaceWith(box);
+        box.querySelector("button").onclick=async()=>{ try{ await callFn("lk-admin-users",{action:"set_password",user_id:b.dataset.u,password:box.querySelector("input").value}); toast("変更しました"); renderAdmin(); }catch(e){ toast(e.message);} };
+        return;
+      }
+      await callFn("lk-admin-users",{action:"set_active",user_id:b.dataset.u,active:b.dataset.act==="start"}); toast("変更しました"); renderAdmin();
+    }catch(e){ toast(e.message); }
+  });
+}
+async function showContact(id, all, names){
+  const c=all.find(x=>x.id===id);
+  const [{data:m},{data:ev}] = await Promise.all([
+    sb.from("lk_messages").select("*").eq("contact_id",id).order("created_at"),
+    sb.from("lk_stage_events").select("*").eq("contact_id",id).order("created_at"),
+  ]);
+  $("cdetail").innerHTML = `<div class="panel work" style="margin-top:6px">
+    <h3>${esc(names[c.owner_id]||"")}さん → ${esc(c.name||"（未入力）")}</h3>
+    <p class="note">${(ev||[]).map(e=>`${fmt(e.created_at)} ${stageOf(e.to_stage).t}`).join(" → ")||"段階の記録なし"}</p>
+    <div class="log">${(m||[]).length?(m||[]).map(x=>`<div class="msg ${x.who}"><small>${x.who==="me"?esc(names[c.owner_id]||"メンバー"):"相手"} · ${fmt(x.created_at)}</small>${esc(x.body)}</div>`).join(""):`<p class="empty">やり取りの記録はまだありません。</p>`}</div>
+  </div>`;
+  $("cdetail").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+</script>
+</body>
+</html>
