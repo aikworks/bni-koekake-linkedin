@@ -111,9 +111,12 @@ Deno.serve(async (req) => {
 ${history}
 ${theirMsg ? `\n# 相手から届いた最新のメッセージ（これに返信する）\n${theirMsg}\n` : ""}${first ? "\n# 今回はつながり申請に添える最初の一言。各案200字以内。いきなりBNIの話はしない。\n" : ""}${chapter.examples ? `\n# うまくいった実例\n${chapter.examples}\n` : ""}`;
 
-  if (!Deno.env.get("ANTHROPIC_API_KEY")) return json({ error: "AIの設定がまだ済んでいません。管理者に連絡してください" }, 503);
+  // 秘密の名前が ANTHROPIC_API_KEY 以外でも、sk-ant- で始まる値があればそれを使う
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY") ??
+    Object.values(Deno.env.toObject()).find((v) => v.startsWith("sk-ant-"));
+  if (!apiKey) return json({ error: "AIの設定がまだ済んでいません。管理者に連絡してください" }, 503);
   const model = Deno.env.get("LK_MODEL") || "claude-opus-5-5";
-  const client = new Anthropic();
+  const client = new Anthropic({ apiKey });
   let res: Anthropic.Beta.BetaMessage;
   try {
     res = await client.beta.messages.create({
